@@ -4,17 +4,21 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <cctype>
 
 using namespace std;
 
 // Class implementations
 
 Screening::Screening(const string& movieName, const string& date, const string& hour, double price, const vector<bool>& occupancy)
-    : movieName(movieName), date(date), hour(hour), price(price), occupancy(occupancy) {}
+    : movieName(movieName), date(date), hour(hour), price(price), occupancy(occupancy) {
+    totalOccupiedSeats = count(occupancy.begin(), occupancy.end(), true);
+}
 
 // Overloaded constructor with default values
 Screening::Screening()
-    : movieName("Unknown"), date("Unknown"), hour("Unknown"), price(0.0), occupancy(30, false) {}
+    : movieName("Unknown"), date("Unknown"), hour("Unknown"), price(0.0), occupancy(30, false), totalOccupiedSeats(0) {}
 
 void Screening::display() const {
     display(true); // Default to showing price
@@ -27,8 +31,9 @@ void Screening::display(bool showPrice) const {
     cout << "Hour: " << hour << endl;
     if (showPrice) {
         cout.precision(2);
-        cout << fixed << "Price: " << price << endl;
+        cout << fixed << "Price: " << price << " PLN" << endl;
     }
+    cout << "Total Occupied Seats: " << totalOccupiedSeats << endl;
     cout << "Occupancy:" << endl;
 
     // Display column headers
@@ -51,6 +56,40 @@ void Screening::display(bool showPrice) const {
 
 string Screening::getMovieName() const {
     return movieName;
+}
+
+int Screening::getTotalOccupiedSeats() const {
+    return totalOccupiedSeats;
+}
+
+bool Screening::isSeatAvailable(int row, char col) const {
+    int colIndex = toupper(col) - 'A';
+    int index = (row - 1) * 5 + colIndex;
+    return (index >= 0 && index < occupancy.size() && !occupancy[index]);
+}
+
+void Screening::occupySeat(int row, char col) {
+    int colIndex = toupper(col) - 'A';
+    int index = (row - 1) * 5 + colIndex;
+    if (index >= 0 && index < occupancy.size() && !occupancy[index]) {
+        occupancy[index] = true;
+        totalOccupiedSeats++;
+    }
+}
+
+double Screening::getPrice() const {
+    return price;
+}
+
+void Screening::saveToFile(ofstream& file) const {
+    file << movieName << "," << date << "," << hour << "," << price << ",";
+    for (size_t i = 0; i < occupancy.size(); ++i) {
+        file << (occupancy[i] ? "1" : "0");
+        if (i < occupancy.size() - 1) {
+            file << ",";
+        }
+    }
+    file << endl;
 }
 
 void Theater::addScreening(const Screening& screening) {
@@ -103,17 +142,31 @@ void Theater::loadScreeningsFromFile(const string& filename) {
     }
 }
 
-const vector<Screening>& Theater::getScreenings() const {
+void Theater::saveScreeningsToFile(const string& filename) const {
+    ofstream file(filename);
+
+    if (file.is_open()) {
+        // Write header line
+        file << "Name,Date,Hour,Price,Occupancy" << endl;
+
+        // Write each screening to file
+        for (const auto& screening : screenings) {
+            screening.saveToFile(file);
+        }
+
+        file.close();
+    } else {
+        cerr << "Unable to open file: " << filename << endl;
+    }
+}
+
+vector<Screening>& Theater::getScreenings() {
     return screenings;
 }
 
 Theater getMovies() {
-    cout << "Enter the name of the file (with the '.csv' extension): ";
-    string filename;
-    cin >> filename;
-
+    string filename = "movies"; 
     Theater theater;
     theater.loadScreeningsFromFile(filename);
-
     return theater;
 }
