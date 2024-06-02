@@ -2,8 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <string>
-#include <vector>
 #include <algorithm>
 #include <cctype>
 
@@ -12,13 +10,13 @@ using namespace std;
 // Class implementations
 
 Screening::Screening(const string& movieName, const string& date, const string& hour, double price, const vector<bool>& occupancy)
-    : movieName(movieName), date(date), hour(hour), price(price), occupancy(occupancy) {
+    : movieName(movieName), date(date), hour(hour), price(price), occupancy(occupancy), totalOccupiedSeats(0), totalPrice(0.0) {
     totalOccupiedSeats = count(occupancy.begin(), occupancy.end(), true);
 }
 
 // Overloaded constructor with default values
 Screening::Screening()
-    : movieName("Unknown"), date("Unknown"), hour("Unknown"), price(0.0), occupancy(30, false), totalOccupiedSeats(0) {}
+    : movieName("Unknown"), date("Unknown"), hour("Unknown"), price(0.0), occupancy(30, false), totalOccupiedSeats(0), totalPrice(0.0) {}
 
 void Screening::display() const {
     display(true); // Default to showing price
@@ -33,7 +31,8 @@ void Screening::display(bool showPrice) const {
         cout.precision(2);
         cout << fixed << "Price: " << price << " PLN" << endl;
     }
-    cout << "Total Occupied Seats: " << totalOccupiedSeats << endl;
+    int availableSeats = 30 - totalOccupiedSeats;
+    cout << "Available Seats: " << availableSeats << endl;
     cout << "Occupancy:" << endl;
 
     // Display column headers
@@ -45,7 +44,7 @@ void Screening::display(bool showPrice) const {
         for (int col = 0; col < 5; ++col) {
             int index = row * 5 + col;
             if (index < occupancy.size()) {
-                cout << occupancy[index] << " ";
+                cout << (occupancy[index] ? "X" : "O") << " "; // 'X' for occupied, 'O' for available
             } else {
                 cout << "0 "; // Default to 0 if index is out of bounds
             }
@@ -58,8 +57,53 @@ string Screening::getMovieName() const {
     return movieName;
 }
 
+void Screening::setMovieName(const string& movieName) {
+    this->movieName = movieName;
+}
+
+string Screening::getDate() const {
+    return date;
+}
+
+void Screening::setDate(const string& date) {
+    this->date = date;
+}
+
+string Screening::getHour() const {
+    return hour;
+}
+
+void Screening::setHour(const string& hour) {
+    this->hour = hour;
+}
+
+double Screening::getPrice() const {
+    return price;
+}
+
+void Screening::setPrice(double price) {
+    if (price >= 0) { // Example condition
+        this->price = price;
+    }
+}
+
+vector<bool> Screening::getOccupancy() const {
+    return occupancy;
+}
+
+void Screening::setOccupancy(const vector<bool>& occupancy) {
+    this->occupancy = occupancy;
+    totalOccupiedSeats = count(occupancy.begin(), occupancy.end(), true); // Recalculate total occupied seats
+}
+
 int Screening::getTotalOccupiedSeats() const {
     return totalOccupiedSeats;
+}
+
+void Screening::setTotalOccupiedSeats(int totalOccupiedSeats) {
+    if (totalOccupiedSeats >= 0) {
+        this->totalOccupiedSeats = totalOccupiedSeats;
+    }
 }
 
 bool Screening::isSeatAvailable(int row, char col) const {
@@ -77,10 +121,6 @@ void Screening::occupySeat(int row, char col) {
     }
 }
 
-double Screening::getPrice() const {
-    return price;
-}
-
 void Screening::saveToFile(ofstream& file) const {
     file << movieName << "," << date << "," << hour << "," << price << ",";
     for (size_t i = 0; i < occupancy.size(); ++i) {
@@ -90,6 +130,12 @@ void Screening::saveToFile(ofstream& file) const {
         }
     }
     file << endl;
+}
+
+void Screening::calculateAndSetTotalPrice(int numReducedTickets, int numNormalTickets) {
+    double reducedPrice = price * 0.5;
+    totalPrice = (numReducedTickets * reducedPrice) + (numNormalTickets * price);
+    setPrice(totalPrice);
 }
 
 void Theater::addScreening(const Screening& screening) {
@@ -132,7 +178,13 @@ void Theater::loadScreeningsFromFile(const string& filename) {
                 occupancy.push_back(cell == "1");
             }
 
-            Screening screening(movieName, date, hour, price, occupancy);
+            Screening screening;
+            screening.setMovieName(movieName);
+            screening.setDate(date);
+            screening.setHour(hour);
+            screening.setPrice(price);
+            screening.setOccupancy(occupancy);
+
             addScreening(screening);
         }
 
@@ -165,7 +217,7 @@ vector<Screening>& Theater::getScreenings() {
 }
 
 Theater getMovies() {
-    string filename = "movies"; 
+    string filename = "movies";
     Theater theater;
     theater.loadScreeningsFromFile(filename);
     return theater;
