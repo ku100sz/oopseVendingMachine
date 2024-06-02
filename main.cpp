@@ -4,6 +4,7 @@
 #include <vector>
 #include <cctype>
 #include <limits>
+#include <cstdlib> // Include for the exit function
 
 using namespace std;
 
@@ -67,22 +68,34 @@ int main() {
                             break;
                         }
 
-                        int numTickets;
+                        int numReducedTickets;
                         while (true) {
-                            cout << "Enter number of tickets: ";
-                            cin >> numTickets;
-                            if (cin.fail() || numTickets < 1 || numTickets > availableSeats) {
+                            cout << "Enter number of reduced tickets (50% off): ";
+                            cin >> numReducedTickets;
+                            if (cin.fail() || numReducedTickets < 0 || numReducedTickets > availableSeats) {
                                 cin.clear();
                                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                                if (numTickets > availableSeats) {
-                                    cout << "Not enough available seats. Please enter a number between 1 and " << availableSeats << "." << endl;
-                                } else {
-                                    cout << "Invalid number. Please enter a number between 1 and " << availableSeats << "." << endl;
-                                }
+                                cout << "Invalid number. Please enter a number between 0 and " << availableSeats << "." << endl;
                             } else {
                                 break;
                             }
                         }
+
+                        int remainingSeats = availableSeats - numReducedTickets;
+                        int numNormalTickets;
+                        while (true) {
+                            cout << "Enter number of normal tickets: ";
+                            cin >> numNormalTickets;
+                            if (cin.fail() || numNormalTickets < 0 || numNormalTickets > remainingSeats) {
+                                cin.clear();
+                                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                                cout << "Invalid number. Please enter a number between 0 and " << remainingSeats << "." << endl;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        int numTickets = numReducedTickets + numNormalTickets;
 
                         vector<string> seats;
                         for (int i = 0; i < numTickets; ++i) {
@@ -109,8 +122,11 @@ int main() {
                             }
                         }
 
+                        theater.getScreenings()[choice - 1].calculateAndSetTotalPrice(numReducedTickets, numNormalTickets);
+                        double totalPrice = theater.getScreenings()[choice - 1].getPrice();
+
                         while (true) {
-                            cout << "1. Pay " << (numTickets * theater.getScreenings()[choice - 1].getPrice()) << " PLN" << endl;
+                            cout << "1. Pay " << totalPrice << " PLN" << endl;
                             cout << "2. Exit" << endl;
 
                             cout << "Enter your choice: ";
@@ -121,8 +137,8 @@ int main() {
                                 goto endPurchase;
                             } else if (payInput == "1") {
                                 cout << "Transaction complete" << endl;
-                                theater.saveScreeningsToFile("movies.csv");
-                                goto endPurchase;
+                                theater.saveScreeningsToFile("movies");
+                                exit(0); // Exit the program after transaction is complete
                             } else {
                                 cout << "Invalid input. Please try again." << endl;
                             }
