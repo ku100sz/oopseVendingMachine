@@ -13,12 +13,21 @@ public:
     void display() const;
     void display(bool showPrice) const; // Overloaded display method
     string getMovieName() const;
+    void setMovieName(const string& movieName);
+    string getDate() const;
+    void setDate(const string& date);
+    string getHour() const;
+    void setHour(const string& hour);
+    double getPrice() const;
+    void setPrice(double price);
+    vector<bool> getOccupancy() const;
+    void setOccupancy(const vector<bool>& occupancy);
     int getTotalOccupiedSeats() const;
-    void purchaseTickets(int numTickets);
+    void setTotalOccupiedSeats(int totalOccupiedSeats);
     bool isSeatAvailable(int row, char col) const;
     void occupySeat(int row, char col);
-    double getPrice() const; // Added getter for price
     void saveToFile(ofstream& file) const;
+    void calculateAndSetTotalPrice(int numReducedTickets, int numNormalTickets);
 
 private:
     string movieName;
@@ -27,6 +36,7 @@ private:
     double price;
     vector<bool> occupancy;
     int totalOccupiedSeats;
+    double totalPrice;
 };
 
 class Theater {
@@ -34,7 +44,7 @@ public:
     void addScreening(const Screening& screening);
     void loadScreeningsFromFile(const string& filename);
     void saveScreeningsToFile(const string& filename) const;
-    vector<Screening>& getScreenings(); // Removed const qualifier to allow modification
+    vector<Screening>& getScreenings();
 
 private:
     vector<Screening> screenings;
