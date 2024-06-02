@@ -50,14 +50,35 @@ int main() {
                     if (subInput == "2") {
                         break;
                     } else if (subInput == "1") {
+                        int availableSeats = 30 - theater.getScreenings()[choice - 1].getTotalOccupiedSeats();
+                        if (availableSeats == 0) {
+                            cout << "No seats available. Please return to the previous menu." << endl;
+                            cout << "1. Return" << endl;
+                            while (true) {
+                                cout << "Enter your choice: ";
+                                string returnInput;
+                                cin >> returnInput;
+                                if (returnInput == "1") {
+                                    break;
+                                } else {
+                                    cout << "Invalid choice. Please try again." << endl;
+                                }
+                            }
+                            break;
+                        }
+
                         int numTickets;
                         while (true) {
                             cout << "Enter number of tickets: ";
                             cin >> numTickets;
-                            if (cin.fail() || numTickets < 1 || numTickets > (30 - theater.getScreenings()[choice - 1].getTotalOccupiedSeats())) {
+                            if (cin.fail() || numTickets < 1 || numTickets > availableSeats) {
                                 cin.clear();
                                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                                cout << "Invalid number. Please enter a number between 1 and " << (30 - theater.getScreenings()[choice - 1].getTotalOccupiedSeats()) << "." << endl;
+                                if (numTickets > availableSeats) {
+                                    cout << "Not enough available seats. Please enter a number between 1 and " << availableSeats << "." << endl;
+                                } else {
+                                    cout << "Invalid number. Please enter a number between 1 and " << availableSeats << "." << endl;
+                                }
                             } else {
                                 break;
                             }
