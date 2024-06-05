@@ -8,6 +8,7 @@
 
 using namespace std;
 
+// Function to validate seat format
 bool isValidSeat(const string& seat) {
     if (seat.length() != 2) return false;
     if (!isalpha(seat[0]) || !isdigit(seat[1])) return false;
@@ -17,7 +18,21 @@ bool isValidSeat(const string& seat) {
 }
 
 int main() {
+    // Load movie screenings from file
     Theater theater = getMovies();
+
+    // Set genre and minimum age for movies
+    theater.setGenreForMovie("GWTW", "Drama");
+    theater.setMinAgeForMovie("GWTW", 12);
+
+    theater.setGenreForMovie("GBaU", "Comedy");
+    theater.setMinAgeForMovie("GBaU", 15);
+
+    theater.setGenreForMovie("AVATAR", "Sci-Fi");
+    theater.setMinAgeForMovie("AVATAR", 13);
+
+    theater.setGenreForMovie("AVATAR2", "Sci-Fi");
+    theater.setMinAgeForMovie("AVATAR2", 13);
 
     while (true) {
         // List movies
