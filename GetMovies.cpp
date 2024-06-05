@@ -7,24 +7,59 @@
 
 using namespace std;
 
-// Class implementations
+// Implementation of Movie methods
+
+Movie::Movie() : movieName("Not specified"), genre("None"), minAge(0) {}
+
+Movie::Movie(const string& name, const string& genre, int minAge)
+    : movieName(name), genre(genre), minAge(minAge) {}
+
+string Movie::getMovieName() const {
+    return movieName;
+}
+
+void Movie::setMovieName(const string& name) {
+    movieName = name;
+}
+
+string Movie::getGenre() const {
+    return genre;
+}
+
+void Movie::setGenre(const string& genre) {
+    this->genre = genre;
+}
+
+int Movie::getMinAge() const {
+    return minAge;
+}
+
+void Movie::setMinAge(int age) {
+    if (age >= 0 && age <= 120) {
+        minAge = age;
+    } else {
+        cout << "Invalid age value assigned." << endl;
+    }
+}
+
+// Implementation of Screening methods
 
 Screening::Screening(const string& movieName, const string& date, const string& hour, double price, const vector<bool>& occupancy)
-    : movieName(movieName), date(date), hour(hour), price(price), occupancy(occupancy), totalOccupiedSeats(0), totalPrice(0.0) {
+    : Movie(movieName, "None", 0), date(date), hour(hour), price(price), occupancy(occupancy), totalOccupiedSeats(0), totalPrice(0.0) {
     totalOccupiedSeats = count(occupancy.begin(), occupancy.end(), true);
 }
 
-// Overloaded constructor with default values
 Screening::Screening()
-    : movieName("Unknown"), date("Unknown"), hour("Unknown"), price(0.0), occupancy(30, false), totalOccupiedSeats(0), totalPrice(0.0) {}
+    : Movie("Unknown", "None", 0), date("Unknown"), hour("Unknown"), price(0.0), occupancy(30, false), totalOccupiedSeats(0), totalPrice(0.0) {}
 
 void Screening::display() const {
     display(true); // Default to showing price
 }
 
-// Overloaded display method
 void Screening::display(bool showPrice) const {
     cout << "Movie: " << movieName << endl;
+    cout << "Genre: " << getGenre() << endl;
+    cout << "Min Age: " << getMinAge() << endl;
     cout << "Date: " << date << endl;
     cout << "Hour: " << hour << endl;
     if (showPrice) {
@@ -53,14 +88,6 @@ void Screening::display(bool showPrice) const {
     }
 }
 
-string Screening::getMovieName() const {
-    return movieName;
-}
-
-void Screening::setMovieName(const string& movieName) {
-    this->movieName = movieName;
-}
-
 string Screening::getDate() const {
     return date;
 }
@@ -82,6 +109,10 @@ double Screening::getPrice() const {
 }
 
 void Screening::setPrice(double price) {
+    int movieHour = stoi(hour.substr(0, 2));
+    if (movieHour < 15) {
+        price *= 0.7; // Apply 30% discount
+    }
     if (price >= 0) { // Example condition
         this->price = price;
     }
@@ -137,6 +168,8 @@ void Screening::calculateAndSetTotalPrice(int numReducedTickets, int numNormalTi
     totalPrice = (numReducedTickets * reducedPrice) + (numNormalTickets * price);
     setPrice(totalPrice);
 }
+
+// Theater class implementations
 
 void Theater::addScreening(const Screening& screening) {
     screenings.push_back(screening);
@@ -216,6 +249,25 @@ vector<Screening>& Theater::getScreenings() {
     return screenings;
 }
 
+// Method to set the genre for a movie
+void Theater::setGenreForMovie(const string& movieName, const string& genre) {
+    for (auto& screening : screenings) {
+        if (screening.getMovieName() == movieName) {
+            screening.setGenre(genre);
+        }
+    }
+}
+
+// Method to set the minimum age for a movie
+void Theater::setMinAgeForMovie(const string& movieName, int minAge) {
+    for (auto& screening : screenings) {
+        if (screening.getMovieName() == movieName) {
+            screening.setMinAge(minAge);
+        }
+    }
+}
+
+// Function to load movies from the file
 Theater getMovies() {
     string filename = "movies";
     Theater theater;
