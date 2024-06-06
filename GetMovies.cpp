@@ -7,33 +7,41 @@
 
 using namespace std;
 
-// Implementation of Movie methods
-
+// Default constructor for the Movie class
+// Initializes the movie with default values
 Movie::Movie() : movieName("Not specified"), genre("None"), minAge(0) {}
 
+// Parameterized constructor for the Movie class
+// Initializes the movie with provided values
 Movie::Movie(const string& name, const string& genre, int minAge)
     : movieName(name), genre(genre), minAge(minAge) {}
 
+// Getter for movieName
 string Movie::getMovieName() const {
     return movieName;
 }
 
+// Setter for movieName
 void Movie::setMovieName(const string& name) {
     movieName = name;
 }
 
+// Getter for genre
 string Movie::getGenre() const {
     return genre;
 }
 
+// Setter for genre
 void Movie::setGenre(const string& genre) {
     this->genre = genre;
 }
 
+// Getter for minAge
 int Movie::getMinAge() const {
     return minAge;
 }
 
+// Setter for minAge with validation
 void Movie::setMinAge(int age) {
     if (age >= 0 && age <= 120) {
         minAge = age;
@@ -42,20 +50,26 @@ void Movie::setMinAge(int age) {
     }
 }
 
-// Implementation of Screening methods
-
+// Parameterized constructor for the Screening class
+// Initializes the screening with provided values and counts occupied seats
 Screening::Screening(const string& movieName, const string& date, const string& hour, double price, const vector<bool>& occupancy)
     : Movie(movieName, "None", 0), date(date), hour(hour), price(price), occupancy(occupancy), totalOccupiedSeats(0), totalPrice(0.0) {
     totalOccupiedSeats = count(occupancy.begin(), occupancy.end(), true);
 }
 
+// Default constructor for the Screening class
+// Initializes the screening with default values
 Screening::Screening()
     : Movie("Unknown", "None", 0), date("Unknown"), hour("Unknown"), price(0.0), occupancy(30, false), totalOccupiedSeats(0), totalPrice(0.0) {}
 
+// Display method with default option to show price
+// Displays screening details including movie information
 void Screening::display() const {
     display(true); // Default to showing price
 }
 
+// Overloaded display method
+// Optionally displays the price along with screening details
 void Screening::display(bool showPrice) const {
     cout << "Movie: " << movieName << endl;
     cout << "Genre: " << getGenre() << endl;
@@ -88,26 +102,33 @@ void Screening::display(bool showPrice) const {
     }
 }
 
+// Getter for date
 string Screening::getDate() const {
     return date;
 }
 
+// Setter for date
 void Screening::setDate(const string& date) {
     this->date = date;
 }
 
+// Getter for hour
 string Screening::getHour() const {
     return hour;
 }
 
+// Setter for hour
 void Screening::setHour(const string& hour) {
     this->hour = hour;
 }
 
+// Getter for price
 double Screening::getPrice() const {
     return price;
 }
 
+// Setter for price with discount logic
+// Applies a 30% discount if the screening is before 15:00
 void Screening::setPrice(double price) {
     int movieHour = stoi(hour.substr(0, 2));
     if (movieHour < 15) {
@@ -118,31 +139,39 @@ void Screening::setPrice(double price) {
     }
 }
 
+// Getter for occupancy
 vector<bool> Screening::getOccupancy() const {
     return occupancy;
 }
 
+// Setter for occupancy
+// Updates the occupancy status and recalculates the total occupied seats
 void Screening::setOccupancy(const vector<bool>& occupancy) {
     this->occupancy = occupancy;
     totalOccupiedSeats = count(occupancy.begin(), occupancy.end(), true); // Recalculate total occupied seats
 }
 
+// Getter for totalOccupiedSeats
 int Screening::getTotalOccupiedSeats() const {
     return totalOccupiedSeats;
 }
 
+// Setter for totalOccupiedSeats
 void Screening::setTotalOccupiedSeats(int totalOccupiedSeats) {
     if (totalOccupiedSeats >= 0) {
         this->totalOccupiedSeats = totalOccupiedSeats;
     }
 }
 
+// Check if a seat is available
+// Returns true if the seat at the specified row and column is available
 bool Screening::isSeatAvailable(int row, char col) const {
     int colIndex = toupper(col) - 'A';
     int index = (row - 1) * 5 + colIndex;
     return (index >= 0 && index < occupancy.size() && !occupancy[index]);
 }
 
+// Mark a seat as occupied
 void Screening::occupySeat(int row, char col) {
     int colIndex = toupper(col) - 'A';
     int index = (row - 1) * 5 + colIndex;
@@ -152,6 +181,8 @@ void Screening::occupySeat(int row, char col) {
     }
 }
 
+// Save screening details to file
+// Writes the screening details and occupancy status to a file
 void Screening::saveToFile(ofstream& file) const {
     file << movieName << "," << date << "," << hour << "," << price << ",";
     for (size_t i = 0; i < occupancy.size(); ++i) {
@@ -163,18 +194,20 @@ void Screening::saveToFile(ofstream& file) const {
     file << endl;
 }
 
+// Calculate and set the total price based on the number of reduced and normal tickets
 void Screening::calculateAndSetTotalPrice(int numReducedTickets, int numNormalTickets) {
     double reducedPrice = price * 0.5;
     totalPrice = (numReducedTickets * reducedPrice) + (numNormalTickets * price);
     setPrice(totalPrice);
 }
 
-// Theater class implementations
-
+// Adds a screening to the theater
 void Theater::addScreening(const Screening& screening) {
     screenings.push_back(screening);
 }
 
+// Loads screenings from a file
+// Reads screening details from a file and adds them to the theater
 void Theater::loadScreeningsFromFile(const string& filename) {
     ifstream file(filename);
 
@@ -227,6 +260,8 @@ void Theater::loadScreeningsFromFile(const string& filename) {
     }
 }
 
+// Saves screenings to a file
+// Writes the details of all screenings in the theater to a file
 void Theater::saveScreeningsToFile(const string& filename) const {
     ofstream file(filename);
 
@@ -245,11 +280,13 @@ void Theater::saveScreeningsToFile(const string& filename) const {
     }
 }
 
+// Getter for the list of screenings
 vector<Screening>& Theater::getScreenings() {
     return screenings;
 }
 
-// Method to set the genre for a movie
+// Sets the genre for a specific movie
+// Updates the genre for all screenings of the specified movie
 void Theater::setGenreForMovie(const string& movieName, const string& genre) {
     for (auto& screening : screenings) {
         if (screening.getMovieName() == movieName) {
@@ -258,7 +295,8 @@ void Theater::setGenreForMovie(const string& movieName, const string& genre) {
     }
 }
 
-// Method to set the minimum age for a movie
+// Sets the minimum age for a specific movie
+// Updates the minimum age for all screenings of the specified movie
 void Theater::setMinAgeForMovie(const string& movieName, int minAge) {
     for (auto& screening : screenings) {
         if (screening.getMovieName() == movieName) {
