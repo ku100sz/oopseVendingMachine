@@ -9,6 +9,7 @@
 using namespace std;
 
 // Function to validate seat format
+// Ensures that the seat is in the format [A-E][1-6]
 bool isValidSeat(const string& seat) {
     if (seat.length() != 2) return false;
     if (!isalpha(seat[0]) || !isdigit(seat[1])) return false;
@@ -35,39 +36,43 @@ int main() {
     theater.setMinAgeForMovie("AVATAR2", 13);
 
     while (true) {
-        // List movies
+        // List movies available in the theater
         for (size_t i = 0; i < theater.getScreenings().size(); ++i) {
             cout << i + 1 << ". " << theater.getScreenings()[i].getMovieName() << endl;
         }
         cout << theater.getScreenings().size() + 1 << ". Exit" << endl;
 
-        // Take user input
+        // Take user input to select a movie or exit
         cout << "Enter the number of the movie to see details or 'exit' to quit: ";
         string input;
         cin >> input;
 
         if (input == "exit" || input == to_string(theater.getScreenings().size() + 1)) {
-            break;
+            break; // Exit the program
         }
 
         try {
-            size_t choice = stoi(input);
+            size_t choice = stoi(input); // Convert user input to a number
             if (choice > 0 && choice <= theater.getScreenings().size()) {
                 while (true) {
+                    // Display selected movie details
                     theater.getScreenings()[choice - 1].display();
 
                     cout << "1. Purchase ticket(s)" << endl;
                     cout << "2. Return" << endl;
 
+                    // Take user input to purchase tickets or return to the movie list
                     cout << "Enter your choice: ";
                     string subInput;
                     cin >> subInput;
 
                     if (subInput == "2") {
-                        break;
+                        break; // Return to the movie list
                     } else if (subInput == "1") {
+                        // Check available seats
                         int availableSeats = 30 - theater.getScreenings()[choice - 1].getTotalOccupiedSeats();
                         if (availableSeats == 0) {
+                            // No seats available
                             cout << "No seats available. Please return to the previous menu." << endl;
                             cout << "1. Return" << endl;
                             while (true) {
@@ -83,6 +88,7 @@ int main() {
                             break;
                         }
 
+                        // Ask for the number of reduced tickets
                         int numReducedTickets;
                         while (true) {
                             cout << "Enter number of reduced tickets (50% off): ";
@@ -96,6 +102,7 @@ int main() {
                             }
                         }
 
+                        // Ask for the number of normal tickets
                         int remainingSeats = availableSeats - numReducedTickets;
                         int numNormalTickets;
                         while (true) {
@@ -112,6 +119,7 @@ int main() {
 
                         int numTickets = numReducedTickets + numNormalTickets;
 
+                        // Ask for seat selection for each ticket
                         vector<string> seats;
                         for (int i = 0; i < numTickets; ++i) {
                             while (true) {
@@ -119,7 +127,7 @@ int main() {
                                 string seat;
                                 cin >> seat;
                                 if (seat == "exit") {
-                                    goto endPurchase;
+                                    goto endPurchase; // Exit seat selection
                                 }
                                 if (!isValidSeat(seat)) {
                                     cout << "Invalid seat. Please enter in the format [A-E][1-6] (e.g., B2)." << endl;
@@ -137,9 +145,11 @@ int main() {
                             }
                         }
 
+                        // Calculate the total price based on the number of reduced and normal tickets
                         theater.getScreenings()[choice - 1].calculateAndSetTotalPrice(numReducedTickets, numNormalTickets);
                         double totalPrice = theater.getScreenings()[choice - 1].getPrice();
 
+                        // Payment process
                         while (true) {
                             cout << "1. Pay " << totalPrice << " PLN" << endl;
                             cout << "2. Exit" << endl;
@@ -149,10 +159,10 @@ int main() {
                             cin >> payInput;
 
                             if (payInput == "2") {
-                                goto endPurchase;
+                                goto endPurchase; // Exit payment process
                             } else if (payInput == "1") {
                                 cout << "Transaction complete" << endl;
-                                theater.saveScreeningsToFile("movies");
+                                theater.saveScreeningsToFile("movies"); // Save updated screenings to file
                                 exit(0); // Exit the program after transaction is complete
                             } else {
                                 cout << "Invalid input. Please try again." << endl;
@@ -170,7 +180,7 @@ int main() {
         }
 
 endPurchase:
-        continue;
+        continue; // Return to the main loop
     }
 
     return 0;
